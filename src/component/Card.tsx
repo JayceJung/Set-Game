@@ -27,6 +27,11 @@ const CardContainer = styled.div<{ $selected: boolean }>`
     ${({ $selected }) => $selected && `
         border: 1px solid red;
     `}
+    @media (max-width: 600px) {
+        width: 100px;
+        height: 60px;
+        margin: 0.5em;
+    }
 `
 
 export default function Card({ shape, color, number, shading, isSelected, onClick }: CardProps & { isSelected: boolean, onClick: () => void }) {

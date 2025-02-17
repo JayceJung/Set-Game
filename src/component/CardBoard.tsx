@@ -16,6 +16,11 @@ const GridContainer = styled.div`
     grid-template-rows: repeat(3, auto);
     gap: 1em;
     padding: 1em;
+    @media (max-width: 600px) {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, auto);
+        gap: 0.5em;
+    }
 `;
 
 const ButtonContainer = styled.div`
@@ -23,13 +28,17 @@ const ButtonContainer = styled.div`
     justify-content: center;
     align-items: center;
     margin: 1em;
-    gap: 1em;giv
+    gap: 1em;
 `;
 
 const ResetButton = styled.button`
     position: absolute;
     top: 10px;
     right: 10px;
+    @media (max-width: 600px) {
+        top: 5px;
+        right: 5px;
+    }
 `;
 
 const StartButton = styled.button`
@@ -41,7 +50,21 @@ const GameContainer = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
+`;
+
+const ResponsiveContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 600px) {
+    padding: 0.5em;
     height: 100vh;
+  }
 `;
 
 export default function CardBoard() {
@@ -230,7 +253,7 @@ export default function CardBoard() {
     }
 
     return (
-        <>
+        <ResponsiveContainer>
             <ResetButton onClick={resetGame}>Reset Game</ResetButton>
             <div>Time Left: {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}</div>
             <div>Score: {score}</div>
@@ -251,6 +274,6 @@ export default function CardBoard() {
                 <button onClick={checkSet}>Set!</button>
                 <button onClick={checkNoSet}>No Set!</button>
             </ButtonContainer>
-        </>
+        </ResponsiveContainer>
     );
 }
