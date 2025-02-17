@@ -1,7 +1,7 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { EnumCardShape, EnumCardColor, EnumCardNumber, EnumCardShading } from "../util/cardprop";
 import Card from "./Card";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 
 interface CardProps {
     shape: EnumCardShape;
@@ -67,6 +67,31 @@ const ResponsiveContainer = styled.div`
   }
 `;
 
+const fadeUp = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const Message = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  animation: ${fadeUp} 0.5s ease-out;
+  opacity: 0;
+  pointer-events: none;
+`;
+
 export default function CardBoard() {
     
     const [selectedCards, setSelectedCards] = useState<number[]>([]);
@@ -76,7 +101,10 @@ export default function CardBoard() {
     const [score, setScore] = useState<number>(0);
     const [gameState, setGameState] = useState<'start' | 'playing' | 'gameOver'>('start');
     const [allScores, setAllScores] = useState<number[]>([]);
-    
+    const [message, setMessage] = useState<string>('');
+    const [showMessage, setShowMessage] = useState<boolean>(false);
+    const messageTimeoutRef = useRef<ReturnType<typeof setTimeout>  | null>(null);
+
     useEffect(() => {
         const storedScores = JSON.parse(localStorage.getItem('scores') || '[]');
         setAllScores(storedScores);
@@ -129,29 +157,39 @@ export default function CardBoard() {
         });
     }, []);
 
+    const displayMessage = (msg: string) => {
+        setMessage(msg);
+        setShowMessage(true);
+        if (messageTimeoutRef.current) {
+            clearTimeout(messageTimeoutRef.current);
+        }
+        messageTimeoutRef.current = setTimeout(() => setShowMessage(false), 4000);
+    };
+
     const checkSet = () => {
         if (selectedCards.length === 3) {
             const cards = selectedCards.map(index => cardList[index]);
             if (isSet(cards)) {
-                console.log("Valid set!");
                 setScore(prevScore => prevScore + 1);
+                displayMessage('Set! +1');
                 replaceSet();
             } else {
-                console.log("Not a set.");
+                displayMessage('Not a Set! +0');
+                setSelectedCards([]);
             }
         }
-    }
+    };
 
     const checkNoSet = () => {
         const cards = displayedCards.map(index => cardList[index]);
         if (!checkForAnySet(cards)) {
-            console.log("Correct, no set!");
             setScore(prevScore => prevScore + 5);
+            displayMessage('No Set! +5');
         } else {
-            console.log("Incorrect, there is a set.");
             setScore(prevScore => prevScore - 2);
+            displayMessage('There is a Set! -2');
         }
-    }
+    };
 
     const replaceSet = () => {
         setDisplayedCards(prevDisplayed => {
@@ -226,6 +264,14 @@ export default function CardBoard() {
         }
     }, [timeLeft, gameState, endGame]);
 
+    useEffect(() => {
+        return () => {
+            if (messageTimeoutRef.current) {
+                clearTimeout(messageTimeoutRef.current);
+            }
+        };
+    }, []);
+
     if (gameState === 'start') {
         return (
             <GameContainer>
@@ -274,6 +320,7 @@ export default function CardBoard() {
                 <button onClick={checkSet}>Set!</button>
                 <button onClick={checkNoSet}>No Set!</button>
             </ButtonContainer>
+            {showMessage && <Message>{message}</Message>}
         </ResponsiveContainer>
     );
 }
